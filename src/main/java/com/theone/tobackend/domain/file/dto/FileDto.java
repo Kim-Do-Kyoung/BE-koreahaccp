@@ -1,6 +1,6 @@
-package domain.file.dto;
+package com.theone.tobackend.domain.file.dto;
 
-import domain.file.File;
+import com.theone.tobackend.domain.file.File;
 import lombok.Builder;
 import lombok.Data;
 

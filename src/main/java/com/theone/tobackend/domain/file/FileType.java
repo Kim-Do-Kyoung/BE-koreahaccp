@@ -1,4 +1,4 @@
-package domain.file;
+package com.theone.tobackend.domain.file;
 
 public enum FileType {
     MAIN,          // 메인 이미지

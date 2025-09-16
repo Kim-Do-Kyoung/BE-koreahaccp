@@ -1,6 +1,5 @@
-package kr.cs.gz.domain;
+package com.theone.tobackend.domain;
 
-import domain.BaseEntity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;

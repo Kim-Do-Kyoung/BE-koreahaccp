@@ -1,9 +1,13 @@
-package domain.file;
+package com.theone.tobackend.common.files;
 
-import domain.file.dto.FileDto;
+import com.theone.tobackend.domain.file.File;
+import com.theone.tobackend.domain.file.FileService;
+import com.theone.tobackend.domain.file.dto.FileDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -50,5 +54,12 @@ public class FileController {
     public ResponseEntity<Void> delete(@PathVariable String externalId) {
         fileService.deleteFile(externalId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{serviceName}")
+    public List<FileDto> list(@PathVariable String serviceName) {
+        return fileService.getFilesByServiceName(serviceName).stream()
+                .map(FileDto::from)
+                .collect(Collectors.toList());
     }
 }

@@ -1,6 +1,5 @@
-package domain.file;
+package com.theone.tobackend.domain.file;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -12,13 +11,15 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class FileService {
 
@@ -37,7 +38,10 @@ public class FileService {
         }
     }
 
-    
+    public File storeFile(MultipartFile file, String serviceName, String serviceId, String fileTypeStr) {
+        return storeFiles(new MultipartFile[]{ file }, serviceName, serviceId, fileTypeStr).get(0);
+    }
+
     public List<File> storeFiles(MultipartFile[] files, String serviceName, String serviceId, String fileTypeStr) {
         List<File> saved = new ArrayList<>();
         if (files == null || files.length == 0) {
@@ -67,19 +71,23 @@ public class FileService {
             String storedName = UUID.randomUUID().toString() + ext;
             Path targetLocation = targetDir.resolve(storedName);
 
+// 파일 저장
             try (InputStream is = multipart.getInputStream()) {
                 Files.copy(is, targetLocation, StandardCopyOption.REPLACE_EXISTING);
+
+                // 여기서부터 절대경로 대신 URL 형태로 저장
+                String fileUrl = "/uploads/" + safeService + "/" + storedName;
 
                 File entity = File.builder()
                         .externalId(UUID.randomUUID().toString())
                         .originalName(original)
                         .storedName(storedName)
-                        .filePath(targetDir.toString())            // 실제 저장된 디렉토리(절대경로)
+                        .filePath(fileUrl)   // ✅ URL 경로만 저장
                         .mimeType(multipart.getContentType())
                         .fileSize(multipart.getSize())
                         .serviceName(serviceName)
                         .serviceId(serviceId)
-                        .fileType(resolveFileType(fileTypeStr))   // fileType은 enum 기반으로 처리
+                        .fileType(resolveFileType(fileTypeStr))
                         .build();
 
                 saved.add(fileRepository.save(entity));
@@ -140,5 +148,19 @@ public class FileService {
             // 삭제 실패도 DB 삭제 전 로그로 남기고 진행하거나 rollback 원하면 예외 던지기
         }
         fileRepository.delete(file);
+    }
+
+    public List<File> getFilesByServiceName(String serviceName) {
+        return fileRepository.findAllByServiceName(serviceName);
+    }
+
+    @Transactional(readOnly = true)
+    public String getStoredFilePath(String serviceName, String serviceId, int index) {
+        List<File> files = getFiles(serviceName, serviceId);
+        if (files.isEmpty() || index >= files.size()) return null;
+
+        File file = files.get(index);
+        // 실제 접근 가능한 URL을 리턴하고 싶으면 도메인이나 contextPath 붙이기 가능
+        return Paths.get(file.getFilePath()).resolve(file.getStoredName()).toString();
     }
 }

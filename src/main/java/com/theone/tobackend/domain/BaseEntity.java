@@ -1,4 +1,4 @@
-package domain;
+package com.theone.tobackend.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

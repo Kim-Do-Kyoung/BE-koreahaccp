@@ -1,7 +1,7 @@
-    package domain.file;
+    package com.theone.tobackend.domain.file;
 
     import jakarta.persistence.*;
-    import kr.cs.gz.domain.IdEntity;
+    import com.theone.tobackend.domain.IdEntity;
     import lombok.*;
     import org.hibernate.annotations.UuidGenerator;
 
